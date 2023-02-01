@@ -1,0 +1,166 @@
+server:
+  port: 8008
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://127.0.0.1:8761/eureka/
+
+spring:
+  application:
+    name: gateway-service
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+  cloud:
+    gateway:
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
+      routes:
+#        - id: user-service
+#          uri: lb://USER-SERVICE
+#          predicates:
+#            - Path=/user-service/**
+#          filters:
+#            - name: CustomFilter
+#            - name: LoggingFilter
+#              args:
+#                baseMessage: Hi, user
+#                preLogger: true
+#                postLogger: true
+        # 로그인
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/login
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie # remove cookie, 헤더값 초기화
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment} # rewrite path, /user-service/login -> /login
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, user
+                preLogger: true
+                postLogger: true
+        # 회원가입
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/users
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie # remove cookie, 헤더값 초기화
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment} # rewrite path, /user-service/users -> /users
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, user
+                preLogger: true
+                postLogger: true
+        # actuator
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/actuator/**
+            - Method=GET,POST
+          filters:
+            - RemoveRequestHeader=Cookie # remove cookie, 헤더값 초기화
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment} # rewrite path, /user-service/users -> /users
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, user
+                preLogger: true
+                postLogger: true
+        # 기타 회원정보
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/**
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie # remove cookie, 헤더값 초기화
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment} # rewrite path, /user-service/users -> /users
+            - AuthorizationHeaderFilter
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, user
+                preLogger: true
+                postLogger: true
+
+        - id: catalog-service
+          uri: lb://CATALOG-SERVICE
+          predicates:
+            - Path=/catalog-service/**
+          filters:
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, catalog
+                preLogger: true
+                postLogger: true
+
+        # orders-service
+        - id: orders-service
+          uri: lb://ORDERS-SERVICE
+          predicates:
+            - Path=/orders-service/**
+          filters:
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, order
+                preLogger: true
+                postLogger: true
+        # orders-actuator
+        - id: orders-service
+          uri: lb://ORDERS-SERVICE
+          predicates:
+            - Path=/orders-service/actuator/**
+            - Method=GET,POST
+          filters:
+            - RemoveRequestHeader=Cookie # remove cookie, 헤더값 초기화
+            - RewritePath=/orders-service/(?<segment>.*), /$\{segment} # rewrite path, /user-service/users -> /users
+
+        - id: first-service
+          uri: lb://FIRST-SERVICE
+          predicates:
+            - Path=/first-service/**
+          filters:
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, there
+                preLogger: true
+                postLogger: true
+        - id: second-service
+          uri: lb://SECOND-SERVICE
+          predicates:
+            - Path=/second-service/**
+          filters:
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, there
+                preLogger: true
+                postLogger: true
+
+# actuator 설정, 설정파읻들 자동 관리 (공식문서 참고), httptrace 빈등록 필요
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh, health, beans, httptrace, busrefresh, info, metrics, prometheus
+
+#token:
+#  secret: secret

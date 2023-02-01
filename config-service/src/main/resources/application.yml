@@ -1,0 +1,33 @@
+server:
+  port: 8888
+
+logging:
+  level:
+    com.example:configservice: DEBUG
+
+
+spring:
+  application:
+    name: config-server
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+#  profiles:
+#    active: native
+  cloud:
+    config:
+      server:
+#        native:
+#          search-locations: file://C:\\springMSA\\native-file-repo
+        git:
+#          uri: file://C:\\springMSA\\git-local-repo
+          uri: https://github.com/bigboyang/springMSA-cloud-config.git
+          # private repository라면 username, password를 추가해야 한다.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: beans, busrefresh

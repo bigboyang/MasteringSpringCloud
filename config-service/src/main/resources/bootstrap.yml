@@ -1,0 +1,7 @@
+encrypt:
+#  key: abcdefghijklmnopqrstuvwxyz0123456789 # 대칭키 알고리즘
+  key-store:
+#    location: file:///C:/springMSA/keystore/apiEncryptionKey.jks # 비대칭키 알고리즘 private-key
+    location: file:/apiEncryptionKey.jks # 비대칭키 알고리즘 private-key
+    password: test1234
+    alias: apiEncryptionKey

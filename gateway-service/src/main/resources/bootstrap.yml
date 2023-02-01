@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    config:
+      uri: http://localhost:8888 # config서버의 uri
+      name: ecommerce # config서버에서 읽어올 파일
+#  profiles:
+#    active: dev
