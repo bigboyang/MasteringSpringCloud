@@ -127,17 +127,7 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
-        <!--swagger -->
-        <dependency>
-            <groupid>io.springfox</groupid>
-            <artifactid>springfox-swagger2</artifactid>
-            <version>2.7.0</version>
-        </dependency>
-        <dependency>
-            <groupid>io.springfox</groupid>
-            <artifactid>springfox-swagger-ui</artifactid>
-            <version>2.7.0</version>
-        </dependency>
+
 
     </dependencies>
     <dependencyManagement>

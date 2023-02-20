@@ -16,6 +16,9 @@ public class CustomFilter extends AbstractGatewayFilterFactory<CustomFilter.Conf
         super(Config.class);
     }
 
+    /**
+     * 고객군 및 역할 매핑 후 다음 필터로 넘어감
+     * */
     @Override
     public GatewayFilter apply(Config config) {
         // Custom Pre Filter
@@ -24,6 +27,7 @@ public class CustomFilter extends AbstractGatewayFilterFactory<CustomFilter.Conf
             ServerHttpResponse response = exchange.getResponse();
 
             log.info("Custom PRE filter : request id -> {}", request.getId());
+            log.info("Custom PRE filter : request ip -> {}", request.getURI());
 
             // Custom Post Filter
             return chain.filter(exchange).then(Mono.fromRunnable(() -> {
