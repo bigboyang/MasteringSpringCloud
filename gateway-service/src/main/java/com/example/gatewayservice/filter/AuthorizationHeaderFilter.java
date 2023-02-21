@@ -1,6 +1,7 @@
 package com.example.gatewayservice.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -24,6 +25,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
         super(Config.class);
         this.env = env;
         this.objectMapper = objectMapper;
+        System.out.println("AuthorizationHeaderFilter.apply 생성됨");
     }
 
     public static class Config {
@@ -33,6 +35,9 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     // login -> token -> users (with token) -> header(include token)
     @Override
     public GatewayFilter apply(Config config) {
+
+        System.out.println("AuthorizationHeaderFilter.apply 실행");
+
 
         return ((exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
@@ -60,7 +65,27 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
                 return onError(exchange, "JWT token is not valid", HttpStatus.UNAUTHORIZED);
             }
 
-            return chain.filter(exchange);
+            // jwt에서 payload를 추출 후 기본정보 조회
+            Claims claims = Jwts.parser()
+                    .setSigningKey("secret")
+                    .parseClaimsJws(jwt)
+                    .getBody();
+
+            String user_rep_id = claims.get("user_rep_id", String.class);
+            String service_type = claims.get("service_type", String.class);
+
+            // exchange 생성
+            ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                    .header("user_rep_id", user_rep_id)
+                    .header("service_type", service_type)
+                    .build();
+
+            log.info("AuthorizationHeaderFilter.apply modifiedRequest -> {}", modifiedRequest.getHeaders().get("user_rep_id"));
+
+
+
+
+            return chain.filter(exchange.mutate().request(modifiedRequest).build());
         });
     }
 
@@ -82,7 +107,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
         String subject = null;
         try {
-            subject = Jwts.parser().setSigningKey(env.getProperty("token.secret"))
+            subject = Jwts.parser().setSigningKey("secret")
                     .parseClaimsJws(jwt)
                     .getBody()
                     .getSubject();

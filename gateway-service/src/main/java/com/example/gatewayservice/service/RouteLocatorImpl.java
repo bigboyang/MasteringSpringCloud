@@ -19,6 +19,7 @@ public class RouteLocatorImpl  implements RouteLocator {
 
     // api 정보 가져오는 필터 추가
     private final ApiServiceImpl apiService;
+    private final UserServiceImpl userService;
 
     // 토큰 필터 추가
     private final AuthorizationHeaderFilter tokenFilter;
@@ -26,11 +27,13 @@ public class RouteLocatorImpl  implements RouteLocator {
     // 로그 필터 추가
 
     public RouteLocatorImpl(RouteLocatorBuilder routeLocatorBuilder, AuthorizationHeaderFilter tokenFilter,
-                            ApiServiceImpl apiService
+                            ApiServiceImpl apiService,
+                            UserServiceImpl userService
     ) {
         this.routeLocatorBuilder = routeLocatorBuilder;
         this.tokenFilter = tokenFilter;
         this.apiService = apiService;
+        this.userService = userService;
     }
 
     @Override
@@ -47,25 +50,27 @@ public class RouteLocatorImpl  implements RouteLocator {
             log.info("{}", serviceInfo.getUrl());
         }
 
-        Flux.fromStream(apiList.stream()).map(
+        return Flux.fromStream(apiList.stream()).map(
                 apiRoute -> routesBuilder
                         .route(r -> r.path(apiRoute.getUrl())
-                                .filters(f -> f.filter(new CustomFilter().apply(new CustomFilter.Config()))
-//                                        .rewritePath(apiRoute.getUrl(), apiRoute.getUri())
-                                        .filter(tokenFilter.apply(new AuthorizationHeaderFilter.Config()))
+                                .filters(f -> f.filter(tokenFilter.apply(new AuthorizationHeaderFilter.Config()))
+                                        .filter(new CustomFilter(userService, apiService).apply(new CustomFilter.Config()))
+//                                        .rewritePath("/user-service/(?<segment>.*)", "/${segment}")
+
                                 )
-                                .uri(apiRoute.getUrl()))
-        );
+                                .uri("http://127.0.0.1:8989")
+                        )
+        ).collectList().flatMapMany(builders -> routesBuilder.build().getRoutes());
 
 
         // login, 회원가입의 경우 토큰 필터 적용 안함
-        return routesBuilder
-                .route(r -> r.path("/user-service/**")
-                .filters(f -> f.filter(new CustomFilter().apply(new CustomFilter.Config()))
-                        .rewritePath("/user-service/(?<segment>.*)", "/${segment}")
-                        .filter(tokenFilter.apply(new AuthorizationHeaderFilter.Config()))
-                )
-                .uri("http://127.0.0.1:57192"))
-                .build().getRoutes();
+//        return routesBuilder
+//                .route(r -> r.path("/user-service/**")
+//                .filters(f -> f.filter(new CustomFilter().apply(new CustomFilter.Config()))
+//                        .rewritePath("/user-service/(?<segment>.*)", "/${segment}")
+//                        .filter(tokenFilter.apply(new AuthorizationHeaderFilter.Config()))
+//                )
+//                .uri("http://127.0.0.1:8989"))
+//                .build().getRoutes();
     }
 }

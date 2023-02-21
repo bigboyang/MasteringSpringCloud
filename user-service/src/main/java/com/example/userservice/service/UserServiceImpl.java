@@ -80,7 +80,8 @@ public class UserServiceImpl implements UserService {
 
         UserEntity userEntity = mapper.map(userDto, UserEntity.class);
         userEntity.setEncryptedPwd(passwordEncoder.encode(userDto.getPwd()));
-        userRepository.save(userEntity);
+        UserEntity userEntity1 = userRepository.save(userEntity);
+        System.out.println("userEntity1 = " + userEntity1);
 
         UserDto returnUserDto = mapper.map(userEntity, UserDto.class);
 

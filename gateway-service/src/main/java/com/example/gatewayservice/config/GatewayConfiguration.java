@@ -4,6 +4,7 @@ import com.example.gatewayservice.filter.AuthorizationHeaderFilter;
 import com.example.gatewayservice.service.ApiServiceImpl;
 import com.example.gatewayservice.service.InternalApiServiceImpl;
 import com.example.gatewayservice.service.RouteLocatorImpl;
+import com.example.gatewayservice.service.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -69,8 +70,11 @@ public class GatewayConfiguration implements WebFluxConfigurer {
      * 토큰필터 등 필터들 라우터에 추가
      * */
     @Bean
-    public RouteLocator routeLocator(RouteLocatorBuilder builder, AuthorizationHeaderFilter tokenFilter, ApiServiceImpl apiService){
-        return new RouteLocatorImpl(builder, tokenFilter, apiService);
+    public RouteLocator routeLocator(RouteLocatorBuilder builder, AuthorizationHeaderFilter tokenFilter,
+                                     ApiServiceImpl apiService,
+                                     UserServiceImpl userService
+    ){
+        return new RouteLocatorImpl(builder, tokenFilter, apiService, userService);
     }
 
 

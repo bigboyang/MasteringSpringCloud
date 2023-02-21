@@ -12,4 +12,7 @@ import java.util.List;
 public interface ApiMapper {
     @Select("SELECT url, custgp_yn, role_yn FROM apis")
     List<ApiDTO> getAllApis();
+
+    @Select("Select url, custgp_yn, role_yn FROM apis WHERE url = #{url}")
+    ApiDTO getApi(String url);
 }

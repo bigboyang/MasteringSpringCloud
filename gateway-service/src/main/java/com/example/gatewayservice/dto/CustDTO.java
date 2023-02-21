@@ -3,20 +3,20 @@ package com.example.gatewayservice.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
-public class UserDTO {
+public class CustDTO {
 
-    public UserDTO() {
+    public CustDTO() {
         // 기본 생성자
     }
 
-    public UserDTO(String user_rep_id, String role) {
+    public CustDTO(String user_rep_id, String cust_id) {
         this.user_rep_id = user_rep_id;
-        this.role = role;
+        this.cust_id = cust_id;
     }
     String user_rep_id;
-    String role;
-
-
+    String cust_id;
 }

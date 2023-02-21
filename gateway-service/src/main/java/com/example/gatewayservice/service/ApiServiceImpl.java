@@ -17,4 +17,7 @@ public class ApiServiceImpl {
         System.out.println(apiMapper.getAllApis());
         return apiMapper.getAllApis();
     }
+    public ApiDTO getApi(String url) {
+        return apiMapper.getApi(url);
+    }
 }

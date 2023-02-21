@@ -62,14 +62,22 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         UserDto userDetails = userService.getUserDetailsByEmail(userName);
 
+        System.out.println("userDetails + : " + userDetails);
+
+        System.out.println(env.getProperty("token.secret"));
+
         String token = Jwts.builder()
-                .setSubject(userDetails.getUserId())
-                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(env.getProperty("token.expiration_time"))))
-                .signWith(SignatureAlgorithm.HS512, env.getProperty("token.secret"))
+                .setSubject(userDetails.getName())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .signWith(SignatureAlgorithm.HS512, "secret")
+                .claim("user_rep_id", userDetails.getName())
+                .claim("service_type", "GO")
                 .compact();
 
         response.addHeader("token", token);
-        response.addHeader("userId", userDetails.getUserId());
+        response.addHeader("userId", userDetails.getName());
+        response.addHeader("service-type", "GO");
+
 
     }
 }

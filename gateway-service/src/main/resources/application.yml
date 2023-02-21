@@ -21,11 +21,11 @@ spring:
     database-platform: org.hibernate.dialect.MySQL5Dialect
     show-sql: true
     generate-ddl: true
-  rabbitmq:
-    host: 127.0.0.1
-    port: 5672
-    username: guest
-    password: guest
+#  rabbitmq:
+#    host: 127.0.0.1
+#    port: 5672
+#    username: guest
+#    password: guest
 #  cloud:
 #    gateway:
 #      default-filters:
