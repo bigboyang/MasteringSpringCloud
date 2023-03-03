@@ -15,7 +15,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Base64;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -66,18 +70,73 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         System.out.println(env.getProperty("token.secret"));
 
+        // payload암호화용 KEY
+        String KEY = "0123456789abcdef0123456789abcdef";
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String expDate = sdf.format(new Date(System.currentTimeMillis() + 86400000));
+
+//        String json = "{\"id\":\"0033116651\", \"exp\":\""+expDate+"\"}"; // JSON 객체
+        String json = "{\"exp\":\""+expDate+"\", \"id\":\"0033116651\"}"; // JSON 객체
+
+        String encrypted = encrypt(json, KEY);
+        System.out.println("Encrypted text: " + encrypted);
+
+        String decrypted = decrypt(encrypted, KEY);
+        System.out.println("Decrypted text: " + decrypted);
+
         String token = Jwts.builder()
                 .setSubject(userDetails.getName())
+                .setHeaderParam("ch", 1)
+                .setHeaderParam("tokenType", 1)
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(SignatureAlgorithm.HS512, "secret")
-                .claim("user_rep_id", userDetails.getName())
-                .claim("service_type", "GO")
+                .claim("body", encrypted)
                 .compact();
 
         response.addHeader("token", token);
         response.addHeader("userId", userDetails.getName());
         response.addHeader("service-type", "GO");
+        response.addHeader("encrypted", encrypted);
+        response.addHeader("decrypted", decrypted);
+        response.addHeader("plain", json);
+
+    }
 
 
+    /**
+     * payload json 암호화용 메소드
+     * @param plainText
+     * @param key
+     * @return
+     */
+    private static String encrypt(String plainText, String key) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES"));
+            byte[] cipherText = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(cipherText);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * payload json 복호화용 메소드
+     * @param cipherText
+     * @param key
+     * @return
+     */
+    private static String decrypt(String cipherText, String key) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES"));
+            byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(cipherText));
+            return new String(plainText, StandardCharsets.UTF_8);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 }
