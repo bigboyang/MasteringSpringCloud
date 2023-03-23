@@ -36,8 +36,8 @@ public class UserController {
 
     @GetMapping("/health-check")
     @Timed(value="users.status", longTask=true)
-    public String status(@RequestHeader("custIdList") String data ) {
-        System.out.println(data);
+    public String status() {
+
         return String.format("It's Working in User Service " +
                 "on PORT(local.server) = " + env.getProperty("local.server.port")
                 + "on PORT(server.port) = " + env.getProperty("server.port")
